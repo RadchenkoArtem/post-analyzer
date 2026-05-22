@@ -597,11 +597,10 @@ async function analyzePost() {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer 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',
-    'HTTP-Referer': 'https://radchenkoartem.github.io'
+    'Authorization': 'Bearer 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'
   },
   body: JSON.stringify({
-    model: 'openrouter/owl-alpha',
+    model: 'google/gemini-2.0-flash-lite-001',
     messages: [
       {
         role: 'system',

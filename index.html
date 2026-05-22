@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажер для перевірки постів</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Manrope:wght@300;400;500;600&display=swap');
+
+  :root {
+    --dark: #1A1A2E;
+    --blue: #2E4A7A;
+    --accent: #E8A838;
+    --light: #F7F5F0;
+    --text: #333333;
+    --muted: #888888;
+    --border: #E0DDD8;
+    --success: #2E7A4A;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Manrope', sans-serif;
+    background: var(--light);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--dark);
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  header h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: white;
+    font-weight: 400;
+  }
+
+  header span {
+    font-size: 11px;
+    color: var(--accent);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 32px 20px 60px;
+  }
+
+  .intro {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    border-left: 4px solid var(--accent);
+  }
+
+  .intro h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    color: var(--dark);
+    margin-bottom: 8px;
+  }
+
+  .intro p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .input-section {
+    background: white;
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  }
+
+  .input-section label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--blue);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 320px;
+    border: 2px solid var(--blue);
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+    resize: vertical;
+    transition: border-color 0.2s;
+    outline: none;
+  }
+
+  textarea:focus { border-color: var(--accent); }
+
+  textarea::placeholder { color: #BBBBBB; }
+
+  .checks-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 16px 0;
+  }
+
+  .check-btn {
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    background: white;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .check-btn.active {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: white;
+  }
+
+  .check-btn:hover:not(.active) {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+
+  .analyze-btn {
+    width: 100%;
+    padding: 18px;
+    background: var(--dark);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .analyze-btn:hover { background: var(--blue); }
+  .analyze-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .loading {
+    display: none;
+    text-align: center;
+    padding: 40px;
+    background: white;
+    border-radius: 16px;
+    margin-bottom: 24px;
+  }
+
+  .loading.visible { display: block; }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading p {
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .results {
+    display: none;
+  }
+
+
+
+  .results.visible { display: block; border: 5px solid var(--dark); border-radius: 24px; padding-bottom: 40px;}
+
+  .result-header {
+    background: var(--dark);
+    color: white;
+    border-radius: 16px 16px 0 0;
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .result-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 400;
+  }
+
+  .badge-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .score-badge {
+    background: var(--accent);
+    color: var(--dark);
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 20px;
+    outline: none;
+  }
+
+  #copyBtn {
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  #copyBtn:hover {
+    transform: scale(0.95);
+  }
+
+  .result-body {
+    background: white;
+    border-radius: 0 0 16px 16px;
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    margin-bottom: 24px;
+  }
+
+  .result-body .analysis-text {
+    font-size: 14px;
+    width: 90%;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .result-body .analysis-text strong {
+    color: var(--dark);
+    font-weight: 600;
+  }
+
+  .analysis-text * {
+    padding: 0;
+  }
+
+  .error-box {
+    background: #FFF5F5;
+    border: 2px solid #FFCCCC;
+    border-radius: 12px;
+    padding: 18px;
+    color: #CC4444;
+    margin: 0 auto;
+    font-size: 14px;
+    display: none;
+    margin-bottom: 20px;
+    width : 93%;
+  }
+
+  .error-box.visible { display: block; }
+
+  .reset-btn {
+    width: 90%;
+    background: transparent;
+    border: 2px solid var(--dark);
+    color: var(--dark);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin: 16px auto;
+  }
+
+  .reset-btn:hover {
+    background-color: var(--dark);
+    color: var(--light);
+  }
+
+  .improve-btn {
+    width: 90%;
+    padding: 16px;
+    background: var(--accent);
+    color: var(--dark);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    gap: 10px;
+  }
+
+  .improve-btn:hover { opacity: 0.88; }
+  .improve-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .improved-section {
+    display: none;
+    margin-top: 24px;
+  }
+
+  .improved-section.visible { display: block; width: 90%; border: 5px solid var(--success); border-radius: 24px; margin: 24px auto 0; }
+
+  .improved-header {
+    background: var(--success);
+    color: white;
+    border-radius: 16px 16px 0 0;
+    padding: 18px 28px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .improved-header h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+  }
+
+  .improved-body {
+    background: white;
+    border-radius: 0 0 16px 16px;
+    padding: 28px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  .improved-text {
+    font-size: 14px;
+    line-height: 1.9;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+
+  .hint-box {
+    background: #F0F4FF;
+    border-radius: 8px;
+    width: 90%;
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--blue);
+    margin: 16px auto;
+    line-height: 1.6;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <span>Інструмент</span>
+    <h1>Тренажер для перевірки постів</h1>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="intro">
+    <h2>Як це працює</h2>
+    <p>Інструмент для підприємців та експертів, які ведуть блоги для залучення клієнтів.
+       <br>
+       <br>
+       Тут можна перевірити текст на хук, вірусний потенціал, продаючу силу і банальність і отримати конкретний розбір по кожному параметру.
+       <br>
+       <br>
+       Що робити:
+       <br>
+       <br>
+       > Вставте готовий пост і перевірте його на ключові параметри. Тренажер розроблений,   щоб ви самі навчилися бачити слабкі місця у своєму контенті. Чим частіше перевіряєте,   тим краще це відчуваєте ще на етапі написання. Один пост перевіряйте і коригуйте один раз.
+       <br>
+       <br>
+       Після перевірки  відкоригуйте пост самостійно або за допомогою ШІ, якщо потрібно. Головне, що рішення приймаєте ви!</p>
+  </div>
+
+  <div class="input-section">
+    <label>Ваш пост</label>
+    <textarea id="postText" placeholder="Вставте текст посту сюди..."></textarea>
+
+    <label style="margin-top: 20px;">Що перевіряємо</label>
+    <div class="checks-row">
+      <button class="check-btn active" data-type="full">🔎 Повний розбір</button>
+      <button class="check-btn" data-type="hook">🎣 Хук і перші рядки</button>
+      <button class="check-btn" data-type="viral">📊 Вірусний потенціал</button>
+      <button class="check-btn" data-type="sells">💰 Чи продає пост</button>
+      <button class="check-btn" data-type="banal">⚠️ Де стає банальним</button>
+    </div>
+
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyzePost()">
+      <span>✦</span> Перевірити пост
+    </button>
+  </div>
+
+  <div class="error-box" id="errorBox"></div>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>Аналізую ваш пост...</p>
+  </div>
+
+  <div class="results" id="results">
+    <div class="result-header">
+      <h3 id="resultTitle">Розбір посту</h3>
+      <div class="badge-wrapper">
+        <span class="score-badge" id="scoreBadge">Готово</span>
+        <a class="score-badge" id="copyBtn" onclick="copyResults()">Копіювати результати</a>
+      </div>
+    </div>
+    <div class="result-body">
+      <div class="analysis-text" id="analysisText"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<footer>Формули вірусних постів — інструмент перевірки контенту</footer>
+
+<script>
+
+let selectedType = 'full';
+
+copyResults = () => {
+  const text = document.getElementById('analysisText').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const badge = document.getElementById('copyBtn');
+    badge.textContent = 'Скопійовано!';
+    setTimeout(() => badge.textContent = 'Копіювати результати', 2000);
+  });
+};
+
+document.querySelectorAll('.check-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.check-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    selectedType = btn.dataset.type;
+  });
+});
+
+function parseMarkdown(text) {
+  return text
+    .replace(/\\n/g, '<br>')
+    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+    .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+    .replace(/^— (.+)$/gm, '<li>$1</li>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>');
+}
+
+const prompts = {
+  full: `Відповідай лише українською. Максимум 350 слів. Без вступів і підсумків — одразу до справи.
+
+Ти — жорсткий редактор контенту для соціальних мереж. Розбери пост чесно і конкретно за 5 критеріями:
+
+1. ФІЛЬТР УВАГИ
+— Чи проходить пост фільтр уваги
+— Що не так з першими 1-2 рядками
+— Де втрачається інтерес
+
+2. ХУК
+— Яку емоцію викликають перші рядки
+— Є чи конфлікт / інтрига / контраст
+— 3 альтернативних хуки які були б сильнішими
+
+3. ДЕ БАНАЛЬНО
+— Конкретні фрази які звучать "як у всіх"
+— Як переписати ці місця
+
+4. УТРИМАННЯ УВАГИ
+— Де читач може закрити текст
+— Де падає динаміка
+— Як посилити
+
+5. ЧИ ПРОДАЄ
+— Закриває чи відкриває потребу
+— Що змінити щоб вів до дії
+
+Пост для аналізу:`,
+
+  hook: `Відповідай лише українською. Максимум 250 слів. Без вступів — одразу до справи.
+
+Ти — редактор контенту. Розбери хук і перші рядки посту:
+
+— Яку емоцію викликають перші 1-2 рядки
+— Є чи конфлікт / інтрига / контраст / несподіванка
+— Чи хочеться читати далі — і чому
+
+Запропонуй 5 альтернативних хуків з різними кутами: провокація, інсайт, біль, контраст, несподіване твердження. Живою українською мовою.
+
+Пост:`,
+
+  viral: `Відповідай лише українською. Максимум 250 слів. Без вступів — одразу до справи.
+
+Ти — аналітик вірусного контенту. Оціни вірусний потенціал посту:
+
+— Який % людей дочитає до кінця і чому
+— Чи будуть зберігати — і за що
+— Чи будуть репостити — і хто
+— Що заважає більшому охопленню
+
+Дай 3 конкретні правки для максимального охоплення. Для кожної: що змінити і чому спрацює.
+
+Пост:`,
+
+  sells: `Відповідай лише українською. Максимум 250 слів. Без вступів — одразу до справи.
+
+Ти — стратег контент-маркетингу. Перевір чи пост веде до продажу:
+
+— Закриває потребу (погано) чи відкриває її (добре)
+— Чи є місце де показана складність а не рішення
+— Що відчуває читач після — впевненість сам впорається чи бажання звернутись
+
+Покажи конкретні речення які треба змінити і як саме.
+
+Пост:`,
+
+  banal: `Відповідай лише українською. Максимум 250 слів. Без вступів — одразу до справи.
+
+Ти — суворий редактор. Знайди все банальне і шаблонне в пості.
+
+Для кожної банальної фрази:
+— Процитуй оригінал
+— Перепиши з контрастом або конкретикою
+
+Будь безжальним але конструктивним.
+
+Пост:`
+};
+
+const titles = {
+  full: 'Повний розбір посту',
+  hook: 'Розбір хуку',
+  viral: 'Вірусний потенціал',
+  sells: 'Чи продає пост',
+  banal: 'Де пост банальний'
+};
+
+async function analyzePost() {
+  const postText = document.getElementById('postText').value.trim();
+  if (!postText || postText.length < 50) {
+    showError('Вставте текст посту (мінімум 50 символів)');
+    return;
+  }
+  const btn = document.getElementById('analyzeBtn');
+  const loading = document.getElementById('loading');
+  const results = document.getElementById('results');
+  const errorBox = document.getElementById('errorBox');
+  btn.disabled = true;
+  errorBox.classList.remove('visible');
+  results.classList.remove('visible');
+  loading.classList.add('visible');
+
+  const fullPrompt = `${prompts[selectedType]}\n\n${postText}`;
+
+  try {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer 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',
+    'HTTP-Referer': 'https://RadchenkoArtem.github.io'
+  },
+  body: JSON.stringify({
+    model: 'google/gemini-2.0-flash-001',
+    messages: [
+      {
+        role: 'system',
+        content: 'Відповідай лише українською мовою. Завжди завершуй думку повністю — не обривай речення.'
+      },
+      { role: 'user', content: fullPrompt }
+    ]
+  })
+  });
+
+    if (response.status === 429) {
+        loading.classList.remove('visible');
+        showError('Забагато запитів — зачекайте хвилину і спробуйте ще раз.');
+        btn.disabled = false;
+        return;
+    }
+
+
+    const data = await response.json();
+    const text = data.choices[0].message.content;
+
+    loading.classList.remove('visible');
+    document.getElementById('resultTitle').textContent = titles[selectedType];
+    document.getElementById('analysisText').innerHTML = parseMarkdown(text);
+    results.classList.add('visible');
+
+  } catch (err) {
+    loading.classList.remove('visible');
+    showError('Щось пішло не так. Спробуйте ще раз.');
+    console.error(err);
+  }
+
+  btn.disabled = false;
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.classList.add('visible');
+}
+
+function resetForm() {
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('postText').value = '';
+  document.getElementById('postText').focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+
+
+</script>
+</body>
+</html>
